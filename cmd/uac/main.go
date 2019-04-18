@@ -58,7 +58,6 @@ func syncUsers(adUsersChan chan string) {
 		// Get parsed user's group from AD
 		userGroups := activedirectory.GetUsersGroups(adUser)
 		k8sclient.SetUserRbac(userGroups, adUser)
-		logrus.Info(userGroups)
 	}
 }
 

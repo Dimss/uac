@@ -85,7 +85,7 @@ func getAdminRoleBinding(userOcpProjects []string, userName string) {
 		if err != nil {
 			panic(err.Error())
 		}
-		logrus.Infof("RoleBinding %s  in namespace %s for user %s was successfully updated",
+		logrus.Infof("RoleBinding %s in namespace %s for user %s was successfully updated",
 			roleBinding.Name, ocpProject, userName)
 	}
 
