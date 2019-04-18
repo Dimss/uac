@@ -17,11 +17,11 @@ func init() {
 	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 }
 
-func SetUserRbac(userGroups []string, userName string) {
-	ocpProjects := getExistingProjects()
-	logrus.Infof("OCP Projects: %s", ocpProjects)
-
-}
+//func SetUserRbac(userGroups []activedirectory.UserGroups, userName string) {
+//	ocpProjects := getExistingProjects()
+//	logrus.Infof("OCP Projects: %s", ocpProjects)
+//
+//}
 
 func GetRunningPods() {
 	conf := "/Users/dima/.kube/config"

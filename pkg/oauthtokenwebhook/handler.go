@@ -5,7 +5,6 @@ import (
 	"fmt"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	log "github.com/sirupsen/logrus"
-	"github.com/uac/pkg/activedirectory"
 	"io/ioutil"
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +20,7 @@ var (
 	deserializer  = codecs.UniversalDeserializer()
 )
 
-func WebHookHandler(w http.ResponseWriter, r *http.Request) {
+func WebHookHandler(w http.ResponseWriter, r *http.Request, adUsersChan chan string) {
 	log.Info("In handle webhook")
 	var body []byte
 	if r.Body != nil {
@@ -52,6 +51,8 @@ func WebHookHandler(w http.ResponseWriter, r *http.Request) {
 		log.Error("Can't write response: %v", err)
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
 	}
-	go activedirectory.SyncUserPermissions(oauthToken)
+
+	//go activedirectory.SyncUserPermissions(oauthToken)
+	adUsersChan <- oauthToken.UserName
 	log.Info("request is done. . . .")
 }

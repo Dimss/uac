@@ -5,7 +5,10 @@ import (
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/uac/pkg/k8sclient"
+	"html"
+	"net/http"
+
+	//"github.com/uac/pkg/k8sclient"
 	"gopkg.in/ldap.v3"
 	"os"
 	"strings"
@@ -24,11 +27,19 @@ func init() {
 	}
 }
 
+
+func RegisterHandler() {
+	http.HandleFunc("/bar1", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello this is ad, %q", html.EscapeString(r.URL.Path))
+	})
+}
+
+
 func SyncUserPermissions(oauthToken oauthv1.OAuthAccessToken) {
 	logrus.Infof("Username: %s", oauthToken.UserName)
 	userGroups := parseUserAdGroups(getUserADGroups(oauthToken.UserName))
 	logrus.Infof("Users AD membership: %s", userGroups)
-	k8sclient.SetUserRbac(userGroups, oauthToken.UserName)
+	//k8sclient.SetUserRbac(userGroups, oauthToken.UserName)
 }
 
 func getUserADGroups(user string) (userAdGroups []string) {
@@ -86,7 +97,8 @@ func getSearchRequest(user string) (searchRequest *ldap.SearchRequest) {
 	)
 }
 
-func parseUserAdGroups(userGroups []string) (parsedUserAdGroup []string) {
+func parseUserAdGroups(userGroups []string) (parsedUserGroups []UserGroups) {
+	//parsedUserAdGroup := make(map[string]string)
 	for _, userGroup := range userGroups {
 		// split AD group string to slice by ','
 		// example: 'CN=ocpns__capital-market,DC=ad,DC=lab'
@@ -100,7 +112,9 @@ func parseUserAdGroups(userGroups []string) (parsedUserAdGroup []string) {
 			// becomes: ['CN','ocpns__capital-market']
 			if len(groupName) == 2 {
 				// Append AD group to result string array
-				parsedUserAdGroup = append(parsedUserAdGroup, groupName[1])
+				adGroupName := groupName[1]
+				ocpNsName := parseAdGroupNameToOcpNsName(adGroupName)
+				parsedUserGroups = append(parsedUserGroups, UserGroups{adGroupName, ocpNsName})
 			} else {
 				logrus.Warnf("Unexpected user group name %s", groupName)
 			}
@@ -112,3 +126,16 @@ func parseUserAdGroups(userGroups []string) (parsedUserAdGroup []string) {
 	return
 }
 
+func parseAdGroupNameToOcpNsName(adGroupName string) (ocpNsName string) {
+	// Get AD group name and parse it to OCP Project name
+	// split AD group by '__' and return element at index 1
+	// Example: ocpns__capital-market
+	// becomes: ['ocpns','capital-market']
+	ocpNs := strings.Split(adGroupName, "__")
+	if len(ocpNs) == 2 {
+		ocpNsName = ocpNs[1]
+	} else {
+		ocpNsName = ""
+	}
+	return
+}

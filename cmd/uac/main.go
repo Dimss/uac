@@ -5,9 +5,10 @@ package main
 
 import (
 	"crypto/tls"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	oauthTokenWebHook "github.com/uac/pkg/oauthtokenwebhook"
+	"github.com/uac/pkg/oauthtokenwebhook"
+	"log"
 	"net/http"
 	"os"
 )
@@ -20,9 +21,9 @@ func init() {
 		panic(err)
 	}
 	// Init log
-	log.SetOutput(os.Stdout)
-	log.SetReportCaller(true)
-	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetReportCaller(true)
+	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 }
 
 func startHttpRouter() {
@@ -30,10 +31,16 @@ func startHttpRouter() {
 	key := viper.GetString("http.key")
 	pair, err := tls.LoadX509KeyPair(cert, key)
 	if err != nil {
-		log.Error("Failed to load key pair: %v", err)
+		logrus.Error("Failed to load key pair: %v", err)
 	}
-	// Register webhook handler
-	http.HandleFunc("/", oauthTokenWebHook.WebHookHandler)
+	// Buffered channel for AD users
+	adUsersChan := make(chan string, 100)
+	// Watch and process ad users when they pushed to adUsersChan channel
+	go syncUsers(adUsersChan)
+	// Handel admission webhook request
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		oauthtokenwebhook.WebHookHandler(w, r, adUsersChan)
+	})
 	// Create HTTPS server configuration
 	s := &http.Server{
 		Addr:      ":8080",
@@ -43,8 +50,15 @@ func startHttpRouter() {
 	log.Fatal(s.ListenAndServeTLS("", ""))
 }
 
+func syncUsers(adUsersChan chan string) {
+	logrus.Info("Waiting for new ad users to process")
+	for adUser := range adUsersChan {
+		logrus.Infof("new users arrive for processing %s ", adUser)
+	}
+}
+
 func main() {
-	log.Info("Starting up...")
+	logrus.Info("Starting up...")
 	startHttpRouter()
 
 }
