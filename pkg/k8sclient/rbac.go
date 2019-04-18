@@ -80,11 +80,13 @@ func getAdminRoleBinding(userOcpProjects []string, userName string) {
 		}
 		// Append user Subject to RoleBinding subject slice
 		roleBinding.Subjects = append(roleBinding.Subjects, subject)
+		// Update RoleBinding
 		roleBinding, err = rbacV1Client.RoleBindings(ocpProject).Update(roleBinding)
 		if err != nil {
 			panic(err.Error())
 		}
-		logrus.Info(roleBinding)
+		logrus.Infof("RoleBinding %s  in namespace %s for user %s was successfully updated",
+			roleBinding.Name, ocpProject, userName)
 	}
 
 }
