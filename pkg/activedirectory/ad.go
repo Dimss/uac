@@ -2,12 +2,8 @@ package activedirectory
 
 import (
 	"fmt"
-	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"html"
-	"net/http"
-
 	//"github.com/uac/pkg/k8sclient"
 	"gopkg.in/ldap.v3"
 	"os"
@@ -27,19 +23,14 @@ func init() {
 	}
 }
 
-
-func RegisterHandler() {
-	http.HandleFunc("/bar1", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello this is ad, %q", html.EscapeString(r.URL.Path))
-	})
-}
-
-
-func SyncUserPermissions(oauthToken oauthv1.OAuthAccessToken) {
-	logrus.Infof("Username: %s", oauthToken.UserName)
-	userGroups := parseUserAdGroups(getUserADGroups(oauthToken.UserName))
-	logrus.Infof("Users AD membership: %s", userGroups)
-	//k8sclient.SetUserRbac(userGroups, oauthToken.UserName)
+func GetUsersGroups(adUser string) (usersGroups []UserGroups) {
+	logrus.Infof("Username: %s", adUser)
+	// Get users groups from AD
+	userAdGroups := getUserADGroups(adUser)
+	// Parse user's AD groups to UserGroups struct
+	usersGroups = parseUserAdGroups(userAdGroups)
+	logrus.Infof("Users AD membership: %s", usersGroups)
+	return
 }
 
 func getUserADGroups(user string) (userAdGroups []string) {

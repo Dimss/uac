@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/uac/pkg/activedirectory"
 	"github.com/uac/pkg/oauthtokenwebhook"
 	"log"
 	"net/http"
@@ -53,7 +54,9 @@ func startHttpRouter() {
 func syncUsers(adUsersChan chan string) {
 	logrus.Info("Waiting for new ad users to process")
 	for adUser := range adUsersChan {
-		logrus.Infof("new users arrive for processing %s ", adUser)
+		// Get parsed user's group from AD
+		userGroups := activedirectory.GetUsersGroups(adUser)
+		logrus.Info(userGroups)
 	}
 }
 
