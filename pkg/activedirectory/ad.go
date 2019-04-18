@@ -88,10 +88,18 @@ func getSearchRequest(user string) (searchRequest *ldap.SearchRequest) {
 
 func parseUserAdGroups(userGroups []string) (parsedUserAdGroup []string) {
 	for _, userGroup := range userGroups {
+		// split AD group string to slice by ','
+		// example: 'CN=ocpns__capital-market,DC=ad,DC=lab'
+		// becomes: ['CN=ocpns__capital-market','DC=ad','DC=lab']
 		groupDn := strings.Split(userGroup, ",")
 		if len(groupDn) > 0 {
+			// First element in the slice contain AD group name
 			groupName := strings.Split(groupDn[0], "=")
+			// Split the group name by '='
+			// Example: CN=ocpns__capital-market
+			// becomes: ['CN','ocpns__capital-market']
 			if len(groupName) == 2 {
+				// Append AD group to result string array
 				parsedUserAdGroup = append(parsedUserAdGroup, groupName[1])
 			} else {
 				logrus.Warnf("Unexpected user group name %s", groupName)
@@ -103,3 +111,4 @@ func parseUserAdGroups(userGroups []string) (parsedUserAdGroup []string) {
 	}
 	return
 }
+

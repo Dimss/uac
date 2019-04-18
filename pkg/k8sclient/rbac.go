@@ -21,7 +21,6 @@ func SetUserRbac(userGroups []string, userName string) {
 	ocpProjects := getExistingProjects()
 	logrus.Infof("OCP Projects: %s", ocpProjects)
 
-
 }
 
 func GetRunningPods() {
