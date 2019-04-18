@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/uac/pkg/activedirectory"
+	"github.com/uac/pkg/k8sclient"
 	"github.com/uac/pkg/oauthtokenwebhook"
 	"log"
 	"net/http"
@@ -56,6 +57,7 @@ func syncUsers(adUsersChan chan string) {
 	for adUser := range adUsersChan {
 		// Get parsed user's group from AD
 		userGroups := activedirectory.GetUsersGroups(adUser)
+		k8sclient.SetUserRbac(userGroups, adUser)
 		logrus.Info(userGroups)
 	}
 }
