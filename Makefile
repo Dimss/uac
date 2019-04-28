@@ -19,10 +19,8 @@ BIN := myapp
 REGISTRY ?= thockin
 
 # This version-strategy uses git tags to set the version string
-VERSION := $(shell git describe --tags --always --dirty)
-#
-# This version-strategy uses a manual value to set the version string
-#VERSION := 1.2.3
+VERSION := $(shell git describe --tags --always )
+
 
 ###
 ### These variables should not need tweaking.

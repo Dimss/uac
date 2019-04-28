@@ -12,20 +12,8 @@ import (
 	"github.com/uac/pkg/activedirectory"
 	"github.com/uac/pkg/k8sclient"
 	"os"
+	"path/filepath"
 )
-
-func init() {
-	// Read JSON configuration file
-	viper.SetConfigFile("config.json")
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
-	// Init log
-	logrus.SetOutput(os.Stdout)
-	logrus.SetReportCaller(true)
-	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-}
 
 var rootCmd = &cobra.Command{
 	Use:   "uac",
@@ -59,10 +47,46 @@ var userSyncCmd = &cobra.Command{
 	},
 }
 
-func main() {
+func init() {
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringP("kubeconfig", "k", "", "Path to kubeconfig file, default to $home/.kube/config")
 	userSyncCmd.PersistentFlags().StringP("user", "u", "", "AD username for sync")
+	if err := viper.BindPFlag("kubeconfig", rootCmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
+		panic(err)
+	}
 	rootCmd.AddCommand(webhookCmd)
 	rootCmd.AddCommand(userSyncCmd)
+	// Init log
+	logrus.SetOutput(os.Stdout)
+	logrus.SetReportCaller(true)
+	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+
+}
+
+func initConfig() {
+	// Read JSON configuration file
+	viper.SetConfigFile("config.json")
+	// look for kubeconfig file, if not found, assume running inside OPC cluster
+	kubeconfig := viper.GetString("kubeconfig")
+	if kubeconfig == "" {
+		kubeconfig = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+		_, err := os.Stat(kubeconfig)
+		if os.IsNotExist(err) {
+			logrus.Info("Unable to find kubeconfig, assuming running inside K8S cluster, gonna use inClusterConfig")
+			viper.Set("kubeconfig", "useInClusterConfig")
+		} else {
+			logrus.Info("Using kubeconfig from user's HOME directory")
+			viper.Set("kubeconfig", kubeconfig)
+		}
+	}
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func main() {
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

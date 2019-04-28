@@ -3,6 +3,7 @@ package k8sclient
 import (
 	projectv1 "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/uac/pkg/activedirectory"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rbacV1 "k8s.io/client-go/kubernetes/typed/rbac/v1"
@@ -91,11 +92,19 @@ func getAdminRoleBinding(userOcpProjects []string, userName string) {
 
 }
 
-func getClientcmdConfigs() (config *rest.Config) {
-	conf := "/Users/dima/.kube/config"
-	config, err := clientcmd.BuildConfigFromFlags("", conf)
-	if err != nil {
-		panic(err.Error())
+func getClientcmdConfigs() *rest.Config {
+	conf := viper.GetString("kubeconfig")
+	if conf == "useInClusterConfig" {
+		config, err := rest.InClusterConfig()
+		if err != nil {
+			panic(err.Error())
+		}
+		return config
+	} else {
+		config, err := clientcmd.BuildConfigFromFlags("", conf)
+		if err != nil {
+			panic(err.Error())
+		}
+		return config
 	}
-	return
 }
