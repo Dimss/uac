@@ -64,5 +64,4 @@ func syncUsers(adUsersChan chan string) {
 func main() {
 	logrus.Info("Starting up...")
 	startHttpRouter()
-
 }
