@@ -11,6 +11,7 @@ FROM alpine:latest
 WORKDIR /uac
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /tmp/uac ./
+COPY config.tmpl config.json
 RUN chmod +x ./uac
 USER 65535:65535
 CMD  ["/uac/uac", "server"]

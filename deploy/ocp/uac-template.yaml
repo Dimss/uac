@@ -124,7 +124,7 @@ objects:
 parameters:
 - description: Specify docker imge
   name: IMAGE
-  value: "docker.io/dimssss/uac:0.4"
+  value: "docker.io/dimssss/uac:0.5"
   required: true
 - description: Specify service name
   name: SERVICE_NAME
