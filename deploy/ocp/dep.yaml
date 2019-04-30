@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: uac
+spec:
+  selector:
+    app: uac
+  ports:
+  - name: http
+    port: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uac
+  labels:
+    app: uac
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uac
+  template:
+    metadata:
+      labels:
+        app: uac
+    spec:
+      containers:
+      - name: uac
+        image: docker.io/dimssss/uac:0.2
+        command: ["/bin/ash","-c","sleep 3600"]
+        ports:
+        - containerPort: 8080

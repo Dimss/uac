@@ -1,6 +1,7 @@
 // https://github.com/Holmes89/hex-example/blob/hex/database/psql/ticket.go
 // https://github.com/thockin/go-build-template
 // https://www.youtube.com/watch?v=VQym87o91f8
+// https://banzaicloud.com/blog/k8s-admission-webhooks/
 package main
 
 import (
@@ -50,8 +51,12 @@ var userSyncCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringP("kubeconfig", "k", "", "Path to kubeconfig file, default to $home/.kube/config")
+	rootCmd.PersistentFlags().StringP("configpath", "c", "", "Path to config directory with config.json file, default to . ")
 	userSyncCmd.PersistentFlags().StringP("user", "u", "", "AD username for sync")
 	if err := viper.BindPFlag("kubeconfig", rootCmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("configpath", rootCmd.PersistentFlags().Lookup("configpath")); err != nil {
 		panic(err)
 	}
 	rootCmd.AddCommand(webhookCmd)
@@ -64,24 +69,37 @@ func init() {
 }
 
 func initConfig() {
-	// Read JSON configuration file
-	viper.SetConfigFile("config.json")
+	viper.SetConfigType("json")
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.SetEnvPrefix("UAC")
+	viper.AutomaticEnv()
+	configPath := viper.GetString("configpath")
+	logrus.Info(configPath)
+	// If config flag is empty, assume config.json located in current directory
+	if configPath != "" {
+		viper.AddConfigPath(configPath)
+	}
 	// look for kubeconfig file, if not found, assume running inside OPC cluster
 	kubeconfig := viper.GetString("kubeconfig")
 	if kubeconfig == "" {
+		// Check if kubeconfig file exists in user's HOME
 		kubeconfig = filepath.Join(os.Getenv("HOME"), ".kube", "config")
 		_, err := os.Stat(kubeconfig)
 		if os.IsNotExist(err) {
+			// The kubeconfig wasn't passed in and not found under user's home directory, assuming inClusterConfig mode
 			logrus.Info("Unable to find kubeconfig, assuming running inside K8S cluster, gonna use inClusterConfig")
 			viper.Set("kubeconfig", "useInClusterConfig")
 		} else {
+			// Use kubeconfig from user's home directory
 			logrus.Info("Using kubeconfig from user's HOME directory")
 			viper.Set("kubeconfig", kubeconfig)
 		}
 	}
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(err)
+		logrus.Errorf("Unable to read config.json file, err: %s", err)
+		os.Exit(1)
 	}
 }
 

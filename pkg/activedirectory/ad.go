@@ -15,12 +15,6 @@ func init() {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	// Read JSON configuration file
-	viper.SetConfigFile("config.json")
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
 }
 
 func GetUsersGroups(adUser string) (usersGroups []UserGroups) {

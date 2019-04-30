@@ -1,0 +1,17 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: uac
+  labels:
+    app: uac
+webhooks:
+  - name: uac.bhnp-system.test
+    clientConfig:
+      url: https://uac.bhnp-system.test:8080/
+#      caBundle: ${BASE64_CA_BUNDLE}
+    rules:
+      - operations: [ "CREATE"]
+        apiGroups: ["*"]
+        apiVersions: ["*"]
+        resources: ["oauthaccesstokens"]
+    failurePolicy: Ignore

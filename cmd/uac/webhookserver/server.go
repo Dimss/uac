@@ -12,7 +12,7 @@ import (
 )
 
 func StartHttpRouter() {
-	cert := viper.GetString("http.cert")
+	cert := viper.GetString("http.crt")
 	key := viper.GetString("http.key")
 	pair, err := tls.LoadX509KeyPair(cert, key)
 	if err != nil {
