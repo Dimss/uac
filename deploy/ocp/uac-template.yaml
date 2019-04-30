@@ -130,6 +130,13 @@ objects:
             readOnly: true
           ports:
           - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
         volumes:
         - name: certs-volume
           secret:
