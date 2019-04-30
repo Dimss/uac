@@ -1,3 +1,3 @@
 mv /tmp/src /go/src/uac
-ls -all src
+ls -all src/uac
 #CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
