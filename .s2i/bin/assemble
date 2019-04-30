@@ -1,6 +1,6 @@
 mv /tmp/src /go/src/uac
 cd /go/src/uac
-ls -all
+export GO111MODULE=on
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /uac/uac
 cd /uac
 ls -all uac
