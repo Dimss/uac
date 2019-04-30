@@ -30,16 +30,16 @@ objects:
     name: uacerts
   type: Opaque
   data:
-    crt: ${BASE64_SERVER_CRT}
-    key: ${BASE64_SERVER_KEY}
+    server.crt: ${BASE64_SERVER_CRT}
+    server.key: ${BASE64_SERVER_KEY}
 - apiVersion: v1
   kind: Secret
   metadata:
     name: uaconfig
   type: Opaque
-  data:
-    http_crt: /uac/server.crt
-    http_key: /uac/server.key
+  stringData:
+    http_crt: /uac/certs/server.crt
+    http_key: /uac/certs/server.key
     ad_host: ${AD_HOST}
     ad_port: ${AD_PORT}
     ad_basedn: ${AD_BASEDN}
@@ -73,46 +73,47 @@ objects:
       spec:
         containers:
         - name: uac
-          image: ${DOCKER_IMAGE}
+          image: ${IMAGE}
+          command: ["/bin/ash","-c", "sleep 3600"]
           env:
-          - name: UAC_HTTP.CRT
+          - name: UAC_HTTP_CRT
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: http_crt
-          - name: UAC_HTTP.KEY
+          - name: UAC_HTTP_KEY
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: http_key
-          - name: UAC_AD.HOST
+          - name: UAC_AD_HOST
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: ad_host
-          - name: UAC_AD.PORT
+          - name: UAC_AD_PORT
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: ad_port
-          - name: UAC_AD.BASEDN
+          - name: UAC_AD_BASEDN
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: ad_basedn
-          - name: UAC_AD.BINDUSER
+          - name: UAC_AD_BINDUSER
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: ad_binduser
-          - name: UAC_AD.BINDPASS
+          - name: UAC_AD_BINDPASS
             valueFrom:
               secretKeyRef:
                 name: uaconfig
                 key: ad_bindpass
           volumeMounts:
           - name: certs-volume
-            mountPath: /uac
+            mountPath: /uac/certs
             readOnly: true
           ports:
           - containerPort: 8080
@@ -122,15 +123,15 @@ objects:
             secretName: uacerts
 parameters:
 - description: Specify docker imge
-  name: DOCKER_IMAGE
-  value: ""
+  name: IMAGE
+  value: "docker.io/dimssss/uac:0.4"
   required: true
 - description: Specify service name
   name: SERVICE_NAME
   value: "uac.bhnp-system.svc.cluster.local"
   required: true
 - description: Specify base64 encoded CA crt for the webhook configuration
-  name: BASE64_CA_BAUNDLE
+  name: BASE64_CA_BUNDLE
   value: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNyRENDQVpRQ0NRQ0dndmRMU3B0dXlUQU5CZ2txaGtpRzl3MEJBUXNGQURBWE1SVXdFd1lEVlFRRERBeGgKWkcxcGMzTnBiMjVmWTJFd0lCY05NVGt3TkRNd01EY3hPRFU0V2hnUE1qRXhPVEEwTURZd056RTROVGhhTUJjeApGVEFUQmdOVkJBTU1ER0ZrYldsemMybHZibDlqWVRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDCkFRb0NnZ0VCQU1CYTRXRHRhRGtuMGtGK1FwZnZaZnZrYk1tOU9MQ3RuS01hbzN6RksrQXBLUnpOZ2ZuMHNkMjQKQmxUOXBBK050YmRNbDc0MTU1eWpPOTNvMHZ6aUJwRU5xUmFqc0RGTUZ1YUlOdk1RbjdyVllkREN4ZFc1OWVDawovU0xEZ2hwMUtaRm54TmY4RUtsMDZlSDNnaTdpNmhBQml5dHowUDg3c1QybDA2M0N0TU9Kb01VRU4yVFdLcWpBCmJodUdkVVJLYXNPMndwaGhPb21WOGEyYlhNMEVoWHhiMnVoZlRPNDdvNlZjbmNQN29MRCtQOVlBTnhjelJhU0YKVzNiVVRQcWR3ZGRLUUlQVWxkb0VoYk00S2V3dDhocGV1WGdNUkFmMEtTM2hrMEJHbXVLckh4ZE5FMCt1azhmVApUSTN1b29vQi9sNjhDcWI2Rkd1MUwwNm9XMnFRNWFrQ0F3RUFBVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBCmkrYitRRE9RMzlMT1NnM1B6aWJBSjVYT1VRcnUyaEQyM1JoZnU1TjFqbkxON3E4dFFjMVZMV0Jac0l6WFBDeXIKUGVrd0NLN3RLaTIzVG8zOUQ0bW56dmx3YUNlcFJoM2tNQjY2dVNIVUswc2swczFCZjNBQldFcXhjZURqeXZGdwpEdjB0V3dEVU1INTNlMWdMOEMvL0RJOXFNckFHNTB0T0pwZFN6a3B6SjIydW8yeS8zSUhidUtITkJUS1o4N0lJCnJ3Qzh0YkN6M1g0SmJrdGw5anAzK1U5YlRhWG9QVkptRjVmTE5rRzU5N3NHbENKbDVSOFk5cnhneGVmVTQzVHYKYitTaUVGeE0xVzdWakJKVzc2V1RPeExRczRCZnFacklGOEgyL2FXSm9Vd0REbDZYU1BPSUloN21XNWFEdWREYwpJWlpxdzQzNENYNEF0dEJLV0NmS3NBPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
   required: true
 - description: Specify base64 server crt for the HTTP server

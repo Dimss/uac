@@ -14,6 +14,7 @@ import (
 	"github.com/uac/pkg/k8sclient"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var rootCmd = &cobra.Command{
@@ -48,6 +49,20 @@ var userSyncCmd = &cobra.Command{
 	},
 }
 
+var dumpRuntimeConfigCmd = &cobra.Command{
+	Use:   "dumpconfig",
+	Short: "Dump all runtime configs",
+	Run: func(cmd *cobra.Command, args []string) {
+		logrus.Info("Dumping runtime configs")
+		logrus.Infof("http.crt: %s", viper.GetString("http.crt"))
+		logrus.Infof("http.key: %s", viper.GetString("http.key"))
+		logrus.Infof("ad.host: %s", viper.GetString("ad.host"))
+		logrus.Infof("ad.port: %s", viper.GetString("ad.port"))
+		logrus.Infof("ad.baseDN: %s", viper.GetString("ad.baseDN"))
+		logrus.Infof("ad.bindUser: %s", viper.GetString("ad.bindUser"))
+	},
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringP("kubeconfig", "k", "", "Path to kubeconfig file, default to $home/.kube/config")
@@ -61,6 +76,7 @@ func init() {
 	}
 	rootCmd.AddCommand(webhookCmd)
 	rootCmd.AddCommand(userSyncCmd)
+	rootCmd.AddCommand(dumpRuntimeConfigCmd)
 	// Init log
 	logrus.SetOutput(os.Stdout)
 	logrus.SetReportCaller(true)
@@ -73,6 +89,7 @@ func initConfig() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	viper.SetEnvPrefix("UAC")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	configPath := viper.GetString("configpath")
 	logrus.Info(configPath)
@@ -92,7 +109,7 @@ func initConfig() {
 			viper.Set("kubeconfig", "useInClusterConfig")
 		} else {
 			// Use kubeconfig from user's home directory
-			logrus.Info("Using kubeconfig from user's HOME directory")
+			logrus.Info("Gonna use kubeconfig from user's HOME directory")
 			viper.Set("kubeconfig", kubeconfig)
 		}
 	}
