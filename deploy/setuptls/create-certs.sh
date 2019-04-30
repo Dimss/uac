@@ -28,8 +28,19 @@ create_server_crts () {
     openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days ${EXPIRATION_DAYS} -extensions v3_req -extfile conf
 }
 
+print_base64_certs (){
+    echo -e "base64 encoded ca.crt\n"
+    base64 -i /tmp/webhook_deployment/ca.crt
+    echo -e "\n"
+    echo -e "base64 encoded server.crt\n"
+    base64 -i /tmp/webhook_deployment/server.crt
+    echo -e "\n"
+    echo -e "base64 encoded server.key\n"
+    base64 -i /tmp/webhook_deployment/server.key
+    echo -e "\n"
+}
 if [ "$#" -ne 1 ]; then
-    echo "Missing certificate common name (CN). Example usage: ./create-certs.sh uac.bhnp-system.svc.cluster.local"
+    echo "Missing certificate common name (CN). Example usage: ./create-certs.sh uac.bnhp-system.svc.cluster.local"
     exit 1
 fi
 
@@ -42,5 +53,4 @@ echo ${COMMON_NAME}
 init
 create_ca
 create_server_crts
-echo base64 encoded ca.crt
-base64 -i /tmp/webhook_deployment/ca.crt
+print_base64_certs

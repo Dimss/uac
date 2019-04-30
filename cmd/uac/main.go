@@ -81,7 +81,6 @@ func init() {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-
 }
 
 func initConfig() {
