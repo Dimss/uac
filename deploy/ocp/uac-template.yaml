@@ -5,7 +5,6 @@ metadata:
     description: Template for deploying Dyncamic Admission WebHook
     tags: infrastructure
   name: uac-webhook
-  namespace: openshift
 objects:
 - apiVersion: v1
   kind: ServiceAccount

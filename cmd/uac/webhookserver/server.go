@@ -26,6 +26,8 @@ func StartHttpRouter() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		oauthtokenwebhook.WebHookHandler(w, r, adUsersChan)
 	})
+	// Handle health check request
+	http.HandleFunc("/healthz", oauthtokenwebhook.LivenessHandler)
 	// Create HTTPS server configuration
 	s := &http.Server{
 		Addr:      ":8080",

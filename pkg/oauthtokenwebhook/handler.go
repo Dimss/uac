@@ -5,6 +5,8 @@ import (
 	"fmt"
 	oauthv1 "github.com/openshift/api/oauth/v1"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"gopkg.in/ldap.v3"
 	"io/ioutil"
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,4 +84,29 @@ func sendAdmissionResponse(w http.ResponseWriter) {
 		logrus.Errorf("Can't write response: %v", err)
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
 	}
+}
+
+func LivenessHandler(w http.ResponseWriter, r *http.Request) {
+
+	adHost := viper.GetString("ad.host")
+	adPort := viper.GetInt("ad.port")
+	bindUser := viper.GetString("ad.bindUser")
+	bindPass := viper.GetString("ad.bindPass")
+	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", adHost, adPort))
+	if err != nil {
+		logrus.Error(err)
+		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
+	}
+	defer l.Close()
+	err = l.Bind(bindUser, bindPass)
+	if err != nil {
+		logrus.Error(err)
+		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
+	}
+
+	if _, err := w.Write([]byte("OK")); err != nil {
+		logrus.Error("Can't write response: %v", err)
+		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
+	}
+
 }
