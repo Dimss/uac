@@ -1,5 +1,6 @@
 pwd
 ls -all
 ls -all src
-ls -all /tmp/src
+mv /tmp/src /tmp/src/uac
+ls -all
 #CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
