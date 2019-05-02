@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 init () {
-    if [ -d "$WORK_DIR" ]; then
-        rm -fr ${WORK_DIR}
-    fi
-    mkdir ${WORK_DIR}
+#    if [ -d "$WORK_DIR" ]; then
+#        rm -fr ${WORK_DIR}
+#    fi
+#    mkdir ${WORK_DIR}
     cd ${WORK_DIR}
     cat << EOF > conf
 [req]

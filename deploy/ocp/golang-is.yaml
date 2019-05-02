@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+    name: golang-s2i
+    namespace: openshift
+spec:
+    tags:
+    - from:
+          kind: DockerImage
+          name: docker.io/dimssss/golang-s2i:0.4
+      name: latest
+      importPolicy:
+          scheduled: true
