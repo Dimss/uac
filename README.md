@@ -4,7 +4,7 @@ This app syncing users permissions between corporate AD server and OCP cluster
 
 ## Generate TLS certificates 
 You'll need to provide `ca.crt`, `server.crt` and `server.key` base64 encoded strings while deploying the UAC admission controller web hook. 
-Run following command to generate all required certificates.  
+Run following commands to generate all required certificates.  
  - `UAC_WEBHOOK_SERVICE_NAME=uac.bnhp-system.svc.cluster.local make generate-tls`
  - `cd /tmp/webhook_deployment` 
  - Get `ca.crt` by executing `base64 -i /tmp/webhook_deployment/ca.crt`
