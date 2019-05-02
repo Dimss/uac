@@ -55,3 +55,29 @@ UAC_AD_BINDUSER="admin1"
 UAC_AD_BINDPASS="admin1"
 ```   
 
+## CLI interface 
+The webhook binary provide two interfaces, WEB and CLI
+ - Run webhook in web mod `uac server`
+ - To run webhook in cli and see all available options run`uac -h`
+
+Following commands and options available for CLI interface  
+```bash
+BNHP user access controller and permission sync manager between OCP clusters and AD
+
+Usage:
+  uac [command]
+
+Available Commands:
+  dumpconfig  Dump all runtime configs
+  help        Help about any command
+  server      Start HTTP server for processing OCP OAuthaccessTokens dynamic admission webhooks
+  sync        Synchronize user permission
+
+Flags:
+  -c, --configpath string   Path to config directory with config.json file, default to .
+  -h, --help                help for uac
+  -k, --kubeconfig string   Path to kubeconfig file, default to $home/.kube/config
+
+Use "uac [command] --help" for more information about a command.
+``` 
+
