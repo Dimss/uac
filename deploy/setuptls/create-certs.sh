@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 init () {
-#    if [ -d "$WORK_DIR" ]; then
-#        rm -fr ${WORK_DIR}
-#    fi
-#    mkdir ${WORK_DIR}
+    if [ -d "$WORK_DIR" ]; then
+        rm -fr ${WORK_DIR}
+    fi
+    mkdir ${WORK_DIR}
     cd ${WORK_DIR}
     cat << EOF > conf
 [req]
@@ -39,6 +39,35 @@ print_base64_certs (){
     base64 -i /tmp/webhook_deployment/server.key
     echo -e "\n"
 }
+
+print_k8s_webhook_def(){
+export SERVICE_NAME=${COMMON_NAME}
+export BASE64_CA_BUNDLE=$(base64 -i /tmp/webhook_deployment/ca.crt)
+cat <<EOF > /tmp/adwebhook.yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: uac
+  labels:
+    app: uac
+webhooks:
+  - name: ${SERVICE_NAME}
+    clientConfig:
+      url: https://${SERVICE_NAME}:8080/
+      caBundle: ${BASE64_CA_BUNDLE}
+    rules:
+      - operations: [ "CREATE"]
+        apiGroups: ["*"]
+        apiVersions: ["*"]
+        resources: ["oauthaccesstokens"]
+    failurePolicy: Ignore
+EOF
+cat /tmp/adwebhook.yaml
+echo "############### create webhook cmd ###############"
+echo "# oc create -f /tmp/adwebhook.yaml               #"
+echo "##################################################"
+}
+
 if [ "$#" -ne 1 ]; then
     echo "Missing certificate common name (CN). Example usage: ./create-certs.sh uac.bnhp-system.svc.cluster.local"
     exit 1
@@ -54,3 +83,4 @@ init
 create_ca
 create_server_crts
 print_base64_certs
+print_k8s_webhook_def
