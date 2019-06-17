@@ -1,9 +1,6 @@
 S2I_BUILD_IMAGE := docker.io/dimssss/golang-s2i:0.4
 VERSION := $(shell git rev-parse --short HEAD)
 
-VARIABLE="\
-THIS IS A VERY LONG\
-TEXT STRING IN A MAKE VARIABLE"
 
 .PHONY: build-docker check-env
 

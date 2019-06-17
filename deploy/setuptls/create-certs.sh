@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+
+WORK_DIR="$(pwd)/webhook_deployment"
+COMMON_NAME=$1
+EXPIRATION_DAYS=36500
+
+echo ${WORK_DIR}
+echo ${COMMON_NAME}
+
 init () {
     if [ -d "$WORK_DIR" ]; then
         rm -fr ${WORK_DIR}
@@ -30,20 +38,20 @@ create_server_crts () {
 
 print_base64_certs (){
     echo -e "base64 encoded ca.crt\n"
-    base64 -i /tmp/webhook_deployment/ca.crt
+    base64 -i ${WORK_DIR}/ca.crt
     echo -e "\n"
     echo -e "base64 encoded server.crt\n"
-    base64 -i /tmp/webhook_deployment/server.crt
+    base64 -i ${WORK_DIR}/server.crt
     echo -e "\n"
     echo -e "base64 encoded server.key\n"
-    base64 -i /tmp/webhook_deployment/server.key
+    base64 -i ${WORK_DIR}/server.key
     echo -e "\n"
 }
 
 print_k8s_webhook_def(){
 export SERVICE_NAME=${COMMON_NAME}
-export BASE64_CA_BUNDLE=$(base64 -i /tmp/webhook_deployment/ca.crt)
-cat <<EOF > /tmp/adwebhook.yaml
+export BASE64_CA_BUNDLE=$(base64 -i ${WORK_DIR}/ca.crt)
+cat <<EOF > ${WORK_DIR}/adwebhook.yaml
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
@@ -63,9 +71,9 @@ webhooks:
     failurePolicy: Ignore
 EOF
 cat /tmp/adwebhook.yaml
-echo "############### create webhook cmd ###############"
-echo "# oc create -f /tmp/adwebhook.yaml               #"
-echo "##################################################"
+echo "############### create webhook cmd ##################"
+echo "# oc create -f ./webhook_deployment/adwebhook.yaml  #"
+echo "#####################################################"
 }
 
 if [ "$#" -ne 1 ]; then
@@ -73,12 +81,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-WORK_DIR="/tmp/webhook_deployment"
-COMMON_NAME=$1
-EXPIRATION_DAYS=36500
 
-echo ${WORK_DIR}
-echo ${COMMON_NAME}
 init
 create_ca
 create_server_crts
