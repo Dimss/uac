@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"regexp"
+
 	//"github.com/uac/pkg/k8sclient"
 	"gopkg.in/ldap.v3"
 	"os"
@@ -50,7 +52,7 @@ func getUserADGroups(user string) (userAdGroups []string) {
 	}
 	// Parse search results
 	if len(sr.Entries) > 0 {
-		logrus.Warning("Getting user's AD groups")
+		logrus.Info("Getting user's AD groups")
 		ldapEntry := sr.Entries[0]
 		if len(ldapEntry.Attributes) > 0 {
 			entryAttributes := ldapEntry.Attributes[0]
@@ -98,29 +100,34 @@ func parseUserAdGroups(userGroups []string) (parsedUserGroups []UserGroups) {
 			if len(groupName) == 2 {
 				// Append AD group to result string array
 				adGroupName := groupName[1]
-				ocpNsName := parseAdGroupNameToOcpNsName(adGroupName)
-				parsedUserGroups = append(parsedUserGroups, UserGroups{adGroupName, ocpNsName})
+				//ocpNsName := parseAdGroupNameToOcpNsName(adGroupName)
+				for _, ocpNsName := range parseAdGroupNameToOcpNsName(adGroupName) {
+					parsedUserGroups = append(parsedUserGroups, UserGroups{adGroupName, ocpNsName})
+				}
 			} else {
 				logrus.Warnf("Unexpected user group name %s", groupName)
 			}
 		} else {
 			logrus.Warnf("Unexpected user group DN %s", groupDn)
 		}
-		fmt.Println(groupDn)
 	}
 	return
 }
 
-func parseAdGroupNameToOcpNsName(adGroupName string) (ocpNsName string) {
-	// Get AD group name and parse it to OCP Project name
-	// split AD group by '__' and return element at index 1
-	// Example: ocpns__capital-market
-	// becomes: ['ocpns','capital-market']
-	ocpNs := strings.Split(adGroupName, "__")
-	if len(ocpNs) == 2 {
-		ocpNsName = ocpNs[1]
+func parseAdGroupNameToOcpNsName(adGroupName string) (ocpNsNames []string) {
+	// Match adGroupName to the provided regex pattern provided in configurations
+	logrus.Infof("Using regex patter %s to match %s", viper.GetString("ad.group2ns"), adGroupName)
+	r, _ := regexp.Compile(viper.GetString("ad.group2ns"))
+	regexMatches := r.FindAllStringSubmatch(adGroupName, -1)
+	if regexMatches != nil {
+		for _, matches := range regexMatches {
+			logrus.Infof("Matches: %v", matches)
+			for _, match := range matches {
+				ocpNsNames = append(ocpNsNames, match)
+			}
+		}
 	} else {
-		ocpNsName = ""
+		logrus.Warn("No matches are found in %s", adGroupName)
 	}
 	return
 }
