@@ -58,6 +58,7 @@ objects:
     ad_basedn: ${AD_BASEDN}
     ad_binduser: ${AD_BINDUSER}
     ad_bindpass: ${AD_BINDPASS}
+    ad_group2ns: ${AD_GROUP2NS}
 - apiVersion: v1
   kind: Service
   metadata:
@@ -124,6 +125,11 @@ objects:
               secretKeyRef:
                 name: uaconfig
                 key: ad_bindpass
+          - name: UAC_AD_GROUP2NS
+            valueFrom:
+              secretKeyRef:
+                name: uaconfig
+                key: ad_group2ns
           volumeMounts:
           - name: certs-volume
             mountPath: /uac/certs

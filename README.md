@@ -40,7 +40,8 @@ Example `config.json`
     "port": 389,
     "baseDN": "dc=ad,dc=lab",
     "bindUser": "admin1",
-    "bindPass": "admin1"
+    "bindPass": "admin1",
+    "group2ns": "__([-_\\w\\d]*)"
   }
 }
 ```
@@ -48,11 +49,13 @@ Environment variables example
 ```bash
 UAC_HTTP_CRT="base64 encoded cert"
 UAC_HTTP_KEY="base64 encoded key"
-UAC_AD_HOST="10.1.2.3"
+UAC_AD_HOST="1.2.3.4"
 UAC_AD_PORT=389
 UAC_AD_BASEDN="dc=ad,dc=lab"
 UAC_AD_BINDUSER="admin1"
 UAC_AD_BINDPASS="admin1"
+UAC_AD_GROUP2NS="__([-_\\w\\d]*)"
+
 ```   
 
 ## CLI interface 
