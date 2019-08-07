@@ -92,6 +92,7 @@ func LivenessHandler(w http.ResponseWriter, r *http.Request) {
 	adPort := viper.GetInt("ad.port")
 	bindUser := viper.GetString("ad.bindUser")
 	bindPass := viper.GetString("ad.bindPass")
+	logrus.Info("Checking AD access. . .")
 	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", adHost, adPort))
 	if err != nil {
 		logrus.Error(err)
@@ -102,11 +103,15 @@ func LivenessHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.Error(err)
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	if _, err := w.Write([]byte("OK")); err != nil {
 		logrus.Error("Can't write response: %v", err)
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
+		return
 	}
+
+	logrus.Info("Successfully connected to AD access. . .")
 
 }
