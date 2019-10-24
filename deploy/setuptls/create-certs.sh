@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-WORK_DIR="$(pwd)/webhook_deployment"
+WORK_DIR="/tmp/webhook_deployment"
 COMMON_NAME=$1
 EXPIRATION_DAYS=36500
 
@@ -50,7 +50,7 @@ print_base64_certs (){
 
 print_k8s_webhook_def(){
 export SERVICE_NAME=${COMMON_NAME}
-export BASE64_CA_BUNDLE=$(base64 -i ${WORK_DIR}/ca.crt)
+export BASE64_CA_BUNDLE=$(base64 -i ${WORK_DIR}/ca.crt | tr -d '\n')
 cat <<EOF > ${WORK_DIR}/adwebhook.yaml
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
@@ -70,9 +70,9 @@ webhooks:
         resources: ["oauthaccesstokens"]
     failurePolicy: Ignore
 EOF
-cat /tmp/adwebhook.yaml
+cat ${WORK_DIR}/adwebhook.yaml
 echo "############### create webhook cmd ##################"
-echo "# oc create -f ./webhook_deployment/adwebhook.yaml  #"
+echo "# oc create -f ${WORK_DIR}/adwebhook.yaml #"
 echo "#####################################################"
 }
 
