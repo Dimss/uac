@@ -26,7 +26,7 @@ build-docker: check-docker-registry
 generate-tls: check-uac-webhook-service-name
 	rm -fr /tmp/webhook_deployment
 	mkdir /tmp/webhook_deployment
-	@/Users/dima/go/src/github.com/uac/deploy/setuptls/create-certs.sh $(UAC_WEBHOOK_SERVICE_NAME)
+	@deploy/setuptls/create-certs.sh $(UAC_WEBHOOK_SERVICE_NAME)
 
 
 
